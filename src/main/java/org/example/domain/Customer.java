@@ -1,8 +1,7 @@
 package org.example.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Version;
+import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 public class Customer {
@@ -16,6 +15,9 @@ public class Customer {
 
   @Version
   Long version;
+
+  @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+  Set<Order> orders;
 
   public Customer(String name) {
     this.name = name;
@@ -54,6 +56,14 @@ public class Customer {
 
   public void setVersion(Long version) {
     this.version = version;
+  }
+
+  public Set<Order> getOrders() {
+    return orders;
+  }
+
+  public void setOrders(Set<Order> orders) {
+    this.orders = orders;
   }
 
 }

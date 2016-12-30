@@ -4,7 +4,9 @@ import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import org.testng.annotations.Test;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * When running tests in the IDE install the "Enhancement plugin".
@@ -66,6 +68,30 @@ public class CustomerTest {
     upd.setNotes("Update without a fetch");
 
     Ebean.update(upd);
+  }
+
+  @Test
+  public void cascadeOneToMany() {
+    Customer jim = new Customer("Joe");
+    jim.getOrders().add(new Order(5L));
+    Ebean.save(jim);
+
+    assertNotNull(jim.getId());
+  }
+
+  @Test(dependsOnMethods = "cascadeOneToMany")
+  public void refreshAndUpdateOneToMany() {
+    Customer jim = Ebean.createQuery(Customer.class).where().eq("name", "Joe").findUnique();
+    assertEquals(jim.orders.size(), 1);
+
+    jim.orders.add(new Order(6L));
+    Ebean.save(jim);
+  }
+
+  @Test(dependsOnMethods = "refreshAndUpdateOneToMany")
+  public void refresUpdatedOneToMany() {
+    Customer jim = Ebean.createQuery(Customer.class).where().eq("name", "Joe").findUnique();
+    assertEquals(jim.orders.size(), 2);
   }
 
 }
