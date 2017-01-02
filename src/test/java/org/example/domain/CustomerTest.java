@@ -82,16 +82,16 @@ public class CustomerTest {
   @Test(dependsOnMethods = "cascadeOneToMany")
   public void refreshAndUpdateOneToMany() {
     Customer jim = Ebean.createQuery(Customer.class).where().eq("name", "Joe").findUnique();
-    assertEquals(jim.orders.size(), 1);
+    assertEquals(jim.getOrders().size(), 1);
 
-    jim.orders.add(new Order(6L));
+    jim.getOrders().add(new Order(6L));
     Ebean.save(jim);
   }
 
   @Test(dependsOnMethods = "refreshAndUpdateOneToMany")
   public void refresUpdatedOneToMany() {
     Customer jim = Ebean.createQuery(Customer.class).where().eq("name", "Joe").findUnique();
-    assertEquals(jim.orders.size(), 2);
+    assertEquals(jim.getOrders().size(), 2);
   }
 
 }
