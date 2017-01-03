@@ -71,27 +71,43 @@ public class CustomerTest {
   }
 
   @Test
-  public void cascadeOneToMany() {
-    Customer jim = new Customer("Joe");
-    jim.getOrders().add(new Order(5L));
-    Ebean.save(jim);
+  public void cascadeOneToMany_FAIL() {
+    Customer joe = new Customer("JoeFails");
+    joe.getOrders().add(new Order(5L)); // this isn't inserted, 'cause the Order entity has no other property set than the @ID.
+    Ebean.save(joe);
 
-    assertNotNull(jim.getId());
+    assertNotNull(joe.getId());
+  }
+
+  @Test(dependsOnMethods = "cascadeOneToMany_FAIL")
+  public void refreshOneToMany_FAIL() {
+    Customer joe = Ebean.createQuery(Customer.class).where().eq("name", "JoeFails").findUnique();
+    assertEquals(joe.getOrders().size(), 1); // fails, beacuse the Order wasn't cascaded in the previous method
+  }
+
+  @Test
+  public void cascadeOneToMany() {
+    Customer joe = new Customer("Joe");
+    Order order = new Order(5L, "someOtherPropertyThanIdIsNecessary");
+    joe.getOrders().add(order);
+    Ebean.save(joe);
+
+    assertNotNull(joe.getId());
   }
 
   @Test(dependsOnMethods = "cascadeOneToMany")
   public void refreshAndUpdateOneToMany() {
-    Customer jim = Ebean.createQuery(Customer.class).where().eq("name", "Joe").findUnique();
-    assertEquals(jim.getOrders().size(), 1);
+    Customer joe = Ebean.createQuery(Customer.class).where().eq("name", "Joe").findUnique();
+    assertEquals(joe.getOrders().size(), 1);
 
-    jim.getOrders().add(new Order(6L));
-    Ebean.save(jim);
+    joe.getOrders().add(new Order(6L, "someRandomProperty")); // this line translated to an update statement rather than an insert.
+    Ebean.save(joe);
   }
 
   @Test(dependsOnMethods = "refreshAndUpdateOneToMany")
   public void refresUpdatedOneToMany() {
-    Customer jim = Ebean.createQuery(Customer.class).where().eq("name", "Joe").findUnique();
-    assertEquals(jim.getOrders().size(), 2);
+    Customer joe = Ebean.createQuery(Customer.class).where().eq("name", "Joe").findUnique();
+    assertEquals(joe.getOrders().size(), 2); // this fails, 'cause the update in the previous method
   }
 
 }
